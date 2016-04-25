@@ -37,7 +37,7 @@ function Interactive () {
   self.ls = function ls (callback) {
     lpm.write(self.duplexStream, new Buffer('ls' + '\n'))
     lpm.read(self.duplexStream, function (msgBuffer) {
-      callback(null, msgBuffer.toString().slice(0, -1))
+      callback(null, msgBuffer.toString().split('\n')[1])
     })
   }
 

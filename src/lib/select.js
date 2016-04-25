@@ -1,10 +1,26 @@
 'use strict'
 
 var lpm = require('length-prefixed-message')
+var varint = require('varint')
 var PROTOCOLID = require('./protocol-id')
+
+var POOL_SIZE = 100000
+var MINIMUM_POOL_LENGTH = 100
+var pool = new Buffer(POOL_SIZE)
 
 exports = module.exports = Select
 exports.createSelect = createSelect
+
+function encodeVarint (val) {
+  varint.encode(val, pool)
+  var buf = pool.slice(0, varint.encode.bytes)
+  pool = pool.slice(varint.encode.bytes)
+  if (pool.length < MINIMUM_POOL_LENGTH) {
+    pool = new Buffer(POOL_SIZE)
+  }
+
+  return buf
+}
 
 function createSelect () {
   return new Select()
@@ -44,7 +60,17 @@ function Select () {
         }
 
         if (msg === 'ls') {
-          lpm.write(duplexStream, new Buffer(JSON.stringify(Object.keys(handlers)) + '\n'))
+          const protocols = Object.keys(handlers)
+          const protocolsLength = encodeVarint(protocols.length)
+          const protocolsList = new Buffer(JSON.stringify(protocols))
+          const msg = Buffer.concat([
+            protocolsLength,
+            new Buffer('\n'),
+            protocolsList,
+            new Buffer('\n')
+          ])
+
+          lpm.write(duplexStream, msg)
           return interactive()
         }
 

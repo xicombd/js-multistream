@@ -36,7 +36,8 @@
   "license": "MIT",
   "dependencies": {
     "babel-runtime": "^6.6.1",
-    "length-prefixed-message": "^3.0.3"
+    "length-prefixed-message": "^3.0.3",
+    "varint": "^4.0.0"
   },
   "devDependencies": {
     "aegir": "^2.1.1",
